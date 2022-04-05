@@ -1,0 +1,379 @@
+---
+title: 'R para Data Science'
+author: 'Dra. Diana Paola Montoya Escobar, dpmontoy@gmail.com'
+date: "Enero 2022"
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+    theme: cosmo
+    highlight: tango
+  github_document:
+    toc: yes
+    dev: jpeg
+  html_document:
+    toc: yes
+    df_print: paged
+subtitle: 'Introducción a R'
+---
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo= TRUE,
+                      fig.height = 6, fig.width = 7)
+```
+
+<style>
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+</style>
+
+<center>
+![](https://bookdown.org/BEST/DSFA/images/Rlogo.png){width=10%}
+</center>
+
+
+# ¿Qué es R y cómo lo podemos instalar?
+
+## ¿Qué es R?
+
+Es un lenguaje de programación que se utiliza para hacer análisis estadístico. Es software libre, que fue creado en los años 90's para fines académicos. A finales de los 2000, con la llegada de la ciencia de datos, R se vuelve un software popular en las empresas, las cuales lo utilizaban para finanzas, marketing, collection, etc. 
+
+## ¿Cómo instalar R?
+
+Para la instalación de R debemos de instalar dos partes y deben de ser **estrictamente**  en el siguiente orden, porque si lo hacen en orden inverso no va a funcionar:
+
+1. Lenguaje R: Este es el lenguaje base. Descárgalo [aquí](https://cran.r-project.org/). Les pedirá un repositorio, este pueden seleccionar el que gusten, pero se recomienda el que más cercano esté a nuestro país. México cuenta con 2.  
+
+2. Interfaz de RSutio: Interfaz gráfica que nos ayuda a programar y visualizar de forma más sencilla y fácil. Descárgalo [aquí](https://www.rstudio.com/products/rstudio/download/). Hay distintas opciones, nosotros utilizaremos al versión *free Desktop*.
+
+Ya teniendo instalado ahora nos hacemos la pregunta, ¿sirve para ciencia de datos?, la respuesta es sí, porque actualmente estamos muy sesgados con Python, pero debemos conocer ambos para aprovechar todo el potencial que tienen uno y el otro. 
+
+R tiene su mayor potencial en el análisis estadístico, análisis exploratorio de datos y limpieza de datos. Pero la principal que es mucho mejor que Python, es en visualización. A pesar que en R podemos entrenar modelos, Python tiene mejores paqueterías para este tipo de modelos, al igual que optimización. Pero no es malo, y es bueno conocerlo y sobre todo saberlo usar. 
+
+# Introducción R para ciencia de datos
+
+La ciencia de datos es una disciplina que permite convertir datos en información.  Para poder realizar esto, debemos de comprender el negocio, adquirir y entender los datos por medio de análisis exploratorios, realizar modelos con los datos para finalmente desplegarlos. En la siguiente figura podrás ver el flujo de la ciencia de datos. Si quieres profundizar más en este flujo puedes entrar [aquí](https://docs.microsoft.com/en-us/azure/architecture/data-science-process/overview). 
+
+  ![](https://docs.microsoft.com/en-us/azure/architecture/data-science-process/media/overview/tdsp-lifecycle2.png){width=90%}
+  
+  
+La ciencia de datos requiere principalmente de cuatro áreas: programación, estadística, comunicación y experiencia. Oye!! pero ¿eso ya no se hacía antes? la respuesta es sí, solo que ahora manejamos grandes volúmenes de datos y lo llamamos de forma diferente.
+
+  ![](https://pics.me.me/machine-learning-lets-see-who-vou-really-are-statistics-imgflip-com-62529263.png){width=30%}
+   ![](https://editor.analyticsvidhya.com/uploads/843579.png){width=50%}
+
+El proceso del análisis de datos lo podemos ver de la siguiente manera utilizando R: 
+  ![](https://es.r4ds.hadley.nz/diagrams_w_text_as_path/es/data-science.svg)
+Primero, debemos importar los datos hacia R. Típicamente, esto implica tomar datos que están guardados en un archivo, base de datos o API y cargarlos como *data frame* en R. 
+
+Una vez que has importado los datos, es una buena idea ordenarlos. Ordenar los datos significa guardarlos de una manera consistente que haga coincidir la semántica del set de datos con la manera en que está guardado. En definitiva, cuando tus datos están ordenados, *cada columna es una variable y cada fila una observación*. Tener datos ordenados es importante porque si su estructura es consistente, puedes enfocar tus esfuerzos en las preguntas sobre los datos y no en luchar para que estos tengan la forma necesaria para diferentes funciones.
+
+Ya con los datos ordenamos y estructurados, una de las cosas por las que comenzamos es por limpieza y transformación. La transformación implica reducir las observaciones a aquellas que sean de interés (como todas las personas de una ciudad o todos los datos del último año), crear nuevas variables que sean funciones de variables ya existentes (como calcular la rapidez a partir de la velocidad y el tiempo) y calcular una serie de estadísticos de resumen (como recuentos y medias). Juntos, a ordenar y transformar, se les llama manejar o domar los datos, porque hacer que estos tengan la forma con la que es natural trabajarlos, suele sentirse como una lucha.
+
+Luego, ya habiendo transformado y limpiado los datos, podemos utilizar dos principales herramientas la visualización y el modelado. Ambas tienen fortalezas y debilidades complementarias, por lo que cualquier análisis real iterará entre ellas varias veces.
+
+La visualización es una actividad humana fundamental. Una buena visualización te mostrará cosas que no esperabas o hará surgir nuevas preguntas acerca de los datos. También puede darte pistas acerca de si estás haciendo las preguntas equivocadas o si necesitas recolectar datos diferentes. Las visualizaciones pueden sorprenderte, pero no escalan particularmente bien, ya que requieren ser interpretadas por una persona.
+
+Los modelos son herramientas complementarias a la visualización. Una vez que tus preguntas son lo suficientemente precisas, puedes utilizar un modelo para responderlas. Los modelos son herramientas matemáticas o computacionales, por lo que generalmente escalan bien. Incluso cuando no lo hacen, resulta más económico comprar más computadores que comprar más cerebros. Sin embargo, cada modelo tiene supuestos y, debido a su propia naturaleza, un modelo no puede cuestionar sus propios supuestos. Esto significa que un modelo, por definición, no puede sorprenderte.
+
+El último paso de la ciencia de datos es la comunicación o despliegue, una parte crítica de cualquier proyecto de análisis de datos. No importa qué tan bien tus modelos y visualizaciones te hayan permitido entender tus datos, a menos que también puedas comunicar esos resultados a otras personas.
+
+Alrededor de todas estas herramientas se encuentra la programación. La programación es una herramienta transversal que usarás en todas las partes de tu proyecto. No necesitas ser una personas experta en programación para hacer ciencia de datos, pero aprender más sobre ella es una gran ventaja porque te permite automatizar tareas recurrentes y resolver problemas con mayor facilidad.
+
+En cualquier proyecto de ciencia de datos tendrás que ocupar estas herramientas, pero en muchos casos estas no serán suficientes. Hay un regla aproximada de 80-20 en juego: puedes enfrentar alrededor del 80 % de cualquier proyecto usando las herramientas que aprenderás en este libro, pero necesitarás utilizar otras para abordar el 20 % restante. A lo largo del libro te iremos señalando recursos donde puedes aprender más.
+
+# Comencemos con R
+
+Cuando abrimos Rstudio que es la interfaz que nos ayudará a hacer más sencillos nuestros códigos, vamos a ver lo siguiente:
+  ![](http://mcolebrook.github.io/CursoRStudio/figure/RStudio_panels.png)
+
+Para ejecutar código directo con R lo hacemos escribiendo línea por línea en la consola y luego presionando enter para ejecutarlo. Pero también nos podemos ayudar de scripts para editar y guardar código de forma más amigable y sencilla. A medida que vamos avanzando veremos cómo vamos a ir utilizando cada una de estas ventanas.
+
+## Paquetes y librerías de R
+
+Los *paquetes de R* son colecciones de funciones y conjunto de datos desarrollados por la comunidad. Estos incrementan la potencia de R, mejorando funcionalidades base en R, o añadiendo nuevas funciones. Por ejemplo, cuando trabajos en el campo de la ciencia de datos, cuando trabajos con data. Típicamente, un paquete incluye código (no necesariamente solo de R), documentación de uso y funciones. Algunos paquetes incluyen set de datos.
+
+Los repositorios son los lugares donde podemos almacenar los paquetes, y desde ellos se pueden descargar por otro usuarios.  Los principales que se usan es el CRAN, que es el repositorio oficial, y  Github, que es uno de los repositorios más populares para proyectos *open source*.
+
+### ¿Cómo podemos instalar un paquete?
+
+Desde la consola de R, utilizamos la función `install.packages()`, desde del paréntesis y con comillas dobles colamos el nombre del paquete y presionamos luego enter. Los paquetes sólo se deben de instalar una vez a menos que tengamos una actualización del mismo.  Para que las funciones de los paquetes puedan ser utilizadas dentro del paquete de R, debemos de ejecutar el mismo desde la opción de librería: `library()`, para este último no es necesario poner el nombre en comillas. 
+
+Otra forma de llamar los paquetes es por medio de la función `nombrepaquete::funcion()`, este sólo lo utilizamos cuando sólo vamos usar una función del paquete y no vemos necesario llamar toda la librería.
+
+Los paquetes también los podemos intalar desde la interfaz de RStudio, podemos dar click en Tools > Install Package y nos abrirá una ventana para instalar un paquete:
+![](http://i.imgur.com/d0emwzd.png)
+# Primeros pasos en R
+
+Para hacer cálculos rápidos en R, podemos utilizar la consola, podemos ejecutar comandos escribiendo la función o el código seguido de enter. 
+
+Por ejemplo, si escribimos en la consola el número 1, nos devuelve el mismo valor:
+
+```{r}
+1
+```
+
+Si queremos guardar este valor en nuestro *Enviroment*, le asignamos un nombre con una flecha (`<-`), y si queremos que se vea este valor en nuestra consola, podemos hacer un print o simplemente poner nuestra variable, como a continuación:
+```{r}
+x <- 1
+# Imprimir valor
+paste("Imprimir valor")
+print(x)
+
+# Mostrar el valor
+paste("Mostrar valor")
+x
+```
+
+Al colocar valores entre comillas, le estamos diciendo a R que será cadenas de texto, por ejemplo:
+```{r}
+msg  <- "hola"
+msg
+```
+
+El carácter # indica que es un comentario. Cualquier cosa escrita a la derecha del mismo será ignorado. Este es el único tipo de comentario en R. A diferencia de otros lenguajes R no soporta los comentarios multi-línia y por bloques.
+
+## Operaciones básicas
+
+Ahora podemos utilizar también operadores matemáticos para utilizar R como tipo calculadora;
+```{r}
+3+2
+5*3
+12/2
+2^3
+```
+
+En tu consola debes escribir el código después del signo >, llamado *prompt*.
+
+## Funciones predefinidas
+
+También podemos usar funciones predefinidas en R, que están escritas en una fuente para código y seguidas de paréntesis. Ejemplos; sum() o mean().
+
+*R* tiene cinco tipos básicos de objetos:
+
+- character
+- numeric (número real)
+- integer
+- complex
+- logical (True/False)
+
+## Vectores
+
+El objeto más básico en R es un vector. Podemos crear vectores vacíos con la función `c()`. Existe únicamente sólo una regla sobre los vectores en R, que es que un vector sólo puede contener objetos de la misma clase. Si requieres de distinta clase, está la opción de crear los objetos de la clase lista. Una lista es representada como un vector pero puede contener objetos de diferentes clases. Para ver la *clase* de un objeto, usamos la función `class()`. 
+
+Creemos vectores con la función `c()`:
+```{r}
+x <- c(0.5, 0.6)      ## numeric
+x <- c(TRUE, FALSE)   ## logical
+x <- c(T, F)          ##logical
+x <- c("a", "b", "c") ##character
+x <- 9:29             ##integer
+x <- c(1+0i, 2+4i)    ##complex
+```
+
+También podemos utilizar la función vector() para inicializar vectores.
+```{r}
+x <- vector("numeric", length = 10)
+x
+```
+
+Existen ocasiones en las que nos encontramos diferentes clases de objetos R mezclados. Cuando hacemos esto, por ejemplo mezclar cadenas de texto con números, todos se nos convierten en tipo caracterer:
+
+```{r}
+y <- c(1.7, "a")  ## character
+y
+```
+
+Las comilla del número `"1.7"` nos indica que es un caracterer. También podemos verificar esto con la clase:
+```{r}
+class(y)
+```
+
+Las funciones lógicas mezcladas con números, las asigna como tipo numérico:
+```{r}
+y <- c(TRUE, 2)   ## numeric
+paste("Valor de y:")
+y
+paste("Clase de y:")
+class(y)
+```
+
+Pero si combinamos con caracteres, nos lo convierte a caracter:
+```{r}
+y <- c("a", TRUE)
+paste("Valor de y:")
+y
+paste("Clase de y:")
+class(y)
+```
+
+## Atributos
+
+Los objetos en *R* pueden tener atributos, estos son como metadatos para el objeto. Estos metadatos pueden ser muy útiles ya que nos proporcionan información del objeto. Por ejemplo, los nombres de columna en un *data frame* nos proporcionan información de lo que contiene cada columna, para conocerlos podemos usar la función `colnames()`. Algunos ejemplos de atributos en objetos R son:
+
+- names, dimnames
+- dimensions (en matrices, arrays)
+- class (e.g. integer, numeric)
+- length
+- otros atributos/metadatos definidos por el usuario
+
+A los atributos de un objeto si los hay, se puede acceder mediante la función `attributes()`. No todos los objetos contienen atributos, en este caso la función `attributes()` devolverá `NULL`.
+
+## Matrices
+
+Las matrices se componen de vectores con mayores atributos en su *dimensión*. Para una matriz $mxn$, su atributo será la dimensión del número de filas o renglones y el número de columnas.
+
+```{r}
+m <- matrix(nrow = 2, ncol = 3)
+m
+```
+
+```{r}
+dim(m)
+```
+
+Podemos construir matrices de números consecutivos y se van llenando de forma vertical comenzando por la esquina superior izquierda y terminando en la última cólumna y última fila:
+
+```{r}
+m <- matrix(1:6, nrow = 2, ncol = 3)
+m
+```
+
+También se pueden construir matrices a partir de vectores:
+```{r}
+x <- 1:3
+y <- 10:12
+cbind(x, y)
+```
+```{r}
+rbind(x,y)
+```
+
+## Listas
+
+Las listas son un tipo especial de vector que pueden contener objetos de diferentes clases. Las listas pueden ser creadas explícitamente con la función `list()`, la cual puede tomar un número arbitrario de argumentos.
+
+```{r}
+x <- list(1, "a", TRUE, 1 + 4i)
+x
+```
+
+## Factores
+
+Los factores son utilizados para representar categorías y pueden estar ordenadas o desordenadas. *Los factores nos ayudarán en el modelado para clasificación*. Podemos pensar en los factores como un vector de enteros en el que cada entero representa una etiqueta. Los factores son importantes en modelos estadísticos y se utilizan especialmente para modelar junto a funciones como `lm()` y `glm()`.
+
+El uso de factores con etiquetas es mejor que con enteros puesto que los factores son auto-descriptivos. Por ejemplo, si trabajamos con una variable que tiene los valores "Hombre" y "Mujer" es mejor que si lo hacemos con los valores 1 y 2.
+
+Los objetos factor pueden ser creados con la función factor().
+```{r}
+x <- factor(c("yes", "yes", "no", "yes", "no"))
+x
+```
+
+## Valores indefinidos
+
+Los valores indefinidos son indicados en *R* por `NA` para cualquier operación indefinida matemáticamente.
+
+- `is.na()` se utiliza para comprobar si los objetos son `NA`
+- `is.nan()` se utiliza para comprobar si los objetos son `NaN`
+- `NA` pertenecen a una clase, por lo tanto nos podemos encontrar con integer `NA`, character `NA`, etc.
+- Un valor `NaN` es también un `NA` pero lo contrario es falso.
+
+```{r}
+## Crea un vector con valore Na
+x <- c(1, 2, NA, 10, 3)
+##Devuelve un vector lógico indicando que elementos son NA
+is.na(x)
+```
+
+
+## Data frames
+
+Los data frames son utilizados en *R* para almacenar datos de tipo tabla.  El paquete `dplyr` contenido en `tidyverse` de Hadley Wickham posee un conjunto optimizado de funciones diseñadas para trabajar eficientemente con `data frames`.
+
+Los `data frames` son representados como un tipo especial de lista donde cada elemento de la lista tiene que tener la misma longitud. Podemos considerar cada elemento de la lista como una columna y la longitud de cada elemento de la lista como el número de filas.
+
+A diferencia de las matrices, los data frames pueden almacenar diferentes clases de objetos en cada columna. Recordemos que los matrices debían tener cada elemento de la misma clase (e.g. todos enteros o todos numéricos).
+
+Además del nombre de las columnas, que nos indica el nombre de las variables, los data frames tienen un atributo especial denominado row.names que nos indica la información de cada fila en el data frame.
+
+Los data frames normalmente son creados leyendo desde un conjunto de datos con las funciones `read.table()` o `read.csv()`. Sin embargo, data frames pueden ser creados explícitamente con la función `data.frame()`.
+
+```{r}
+iris
+```
+
+# Ayuda en R
+
+Cuando no sabes cómo usar una función, dentro de tu consola escribe el nombre de la función antecedida del signo de cierre de interrogación, por ejemplo:
+```{r}
+?summary
+```
+
+Lo cual nos llevará a la ventana de ayuda y nos mostrará cómo usar la función. 
+
+# Paquete de `tidyverse`
+
+[`Tidyverse`](https://www.tidyverse.org/) es un conjunto de paquetes en R diseñados para ciencia de datos (manejo, limpieza, organización, manipulación de datos). Este paquete  ayuda en todo el proceso de importar transformar visualizar modelar y comunicar toda la información que normalmente utilizamos en procesos de ciencia de datos. La ventaja que tienen estos paquetes que comparten nombre y estructuras comunes. Estos paquetes de R son mantenidos por la comunidad y por el RStudio.
+
+![](http://www.seec.uct.ac.za/sites/default/files/image_tool/images/330/tidy_workflow.png){width=60%}
+
+Puedes instalar todos los paquetes desde `tidyverse` simplemente escribiendo en tu consola de *R* `install.packages("tidyverse")`. 
+
+```{r install tidyverse, eval=FALSE}
+# Sólo se necesita instalar la primera vez este paquete en tu computadora
+install.packages("tidyverse")
+```
+
+Para que funcione este paquete, siempre en nuestro proyecto debemos de cargar su librería corriendo el siguiente código:
+
+```{r}
+library(tidyverse)
+```
+
+
+Cuando ya estemos en el código, si necesitas ser explicito de una función o dataset de un paquete en particular, podemos usar la función `form_package::function()`. Por ejemplo, `ggplot2::ggplot()` dice que, explícitamente, se quiere usar la función  `ggplot()` del paquete  `ggplot2`.
+
+Hay muchos paquetes que usaremos que cumplen con la estructura de los datos y las prácticas de `tidyverse` que deben instalarse de forma independiente usando el comando `install.packages("package")` y luego cargar su librería. Algunos de los que usaremos será [`lubridate`](https://lubridate.tidyverse.org/) y [`tsibble`](https://cran.rstudio.com/web/packages/tsibble/vignettes/intro-tsibble.html), que son paquetes especiales para fechas.
+
+Los paquetes del Tidyverse cambian con bastante frecuencia. Puedes ver si existen actualizaciones disponibles y opcionalmente instalarlas ejecutando `tidyverse_update()`.
+
+## Paquete `datos`
+
+R cuenta con muchos datos dentro de algunas de las paqueterías, una de ellas es la paquetería de `datos`. Podemos instalar este paquete de la siguiente forma;
+
+```{r install datos, include=FALSE}
+# Sólo se necesita instalar la primera vez este paquete en tu computadora
+install.packages("datos")
+```
+ 
+ Y para ejecutar las funciones de este paquete, utilizamos la función de `library`:
+```{r}
+library(datos)
+```
+ 
+
+## Operador pipe `%>%` (Piping datos)
+
+
+El comando `%>%` que se conoce como *pipe* o en español *tubería*, es un comando que funciona con la librería de `tidyverse`.  Se utiliza para enfatizar una secuencia de acciones comenzando con un conjunto de datos. Debe de estar antecedido de una línea y es más fácil de entender si se hacen acciones por líneas.
+
+![](http://gauss.inf.um.es:8080/tabular-tidyverse/www/images/hex-pipes.png){width=40%}
+
+Podemos interpretar el pipe con la palabra *luego*. Por ejemplo, dentro de la misma línea de código podemos llamar los datos originales, *luego* (`%>%`) filtrar, *luego* (`%>%`) organizar y *luego* (`%>%`) crear una nueva variable. 
+
+Puede parecer rara al principio, pero necesitábamos una función definida por >, que implica que es una cadena (una sucesión de órdenes) y en R, para que un símbolo defina una función debe estar escrito entre porcentajes.
+
+
+# Exploración de datos
+
+R es una herramienta muy útil para el análisis de datos.  Hay 4 partes principales de la analítica, todas las podemos hacer en otros tipos de lenguaje, pero R, da mejores resultados, y es más amigable, principalmente en la analítica descriptiva, diagnóstica y predictiva.   La exploración de datos hace parte de la analítica descriptiva (mirar qué pasó) y diagnóstica (mirar por qué pasó). 
+
+![](https://www.datainnovation.io/wp-content/webpc-passthru.php?src=https://www.datainnovation.io/wp-content/uploads/2021/07/Analytics-types-2-2.png&nocache=1){width=80%}
+
+En R miramos los datos, se generan hipótesis rápidamente, testearlas con celeridad y luego repetir el proceso de manera iterativa. El objetivo de la exploración de datos es generar muchos hallazgos prometedores que luego puedas retomar para explorarlos en mayor profundidad.
+
+La idea de este curso es que aprendas el siguiente: Importar los datos, ordenarlos y transformarlos y  visualizarlos. El modelado se verá en otros cursos. R también cuenta con una paquetería que nos ayuda al análisis y exploración de datos (EDA), el cual veremos más adelante.
+
+
+![](https://es.r4ds.hadley.nz/diagrams_w_text_as_path/es/data-science-explore.svg){width=80%}
+
+¡Comencemos con R!
