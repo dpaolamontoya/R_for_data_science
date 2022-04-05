@@ -1,0 +1,359 @@
+---
+title: 'R para Data Science'
+author: 'Dra. Diana Paola Montoya Escobar, dpmontoy@gmail.com'
+date: "Enero 2022"
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+    theme: cosmo
+    highlight: tango
+  github_document:
+    toc: yes
+    dev: jpeg
+  html_document:
+    toc: yes
+    df_print: paged
+subtitle: 'Visualización con  `ggplot2`'
+---
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo= TRUE,
+                      fig.height = 6, fig.width = 7)
+```
+
+<style>
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+</style>
+
+<center>
+![](https://bookdown.org/BEST/DSFA/images/Rlogo.png){width=10%}
+</center>
+
+# Visualización de datos
+
+Lo que parenderás en esta sección será visualizar tus datos con el paquete [`ggplot2`](http://vita.had.co.nz/papers/layered-grammar.pdf.) que está contenido en la libraría de `tidyverse`. R cuenta con varias formas de visualización de datos, pero `ggplot2` es el más elegante y versátil.  Esto se debe a que `ggplot2` implementa un sistema coherente para describir y construir gráficos, conocido como la gramática de gráficos. Con `ggplot2` puedes hacer más cosas en menor tiempo, aprendiendo un único sistema y aplicándolo en diferentes ámbitos.
+
+`ggplot2` usa una gramática que es por gráficos por capas, que más adelante vamos a ver paso a paso cómo se utiliza.  
+
+Como `ggplot2` está contenido en la paquetería de `tidyverse`, lo primero que debemos de hacer es cargar su librería:
+```{r}
+library("tidyverse")
+```
+
+Para ver cómo utilizar la paquerería de ggplot, utilizaremos los datos de volcanes de [TidyTuesday](https://github.com/rfordatascience/tidytuesday). El dataset [TidyTyesdat: Volcano Eruptions](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-05-12/readme.md) es el que seguiremos utilizando para la visualización de los datos.
+
+Para llamar los datos lo hacemos con la función `read_csv()`:
+```{r}
+volcano <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv")
+```
+
+Antes de visualizar, vamos a hacer una transformación de nuestros datos con  la función `transmute()`, así, podremos ajustar las variables que deseos y seleccionarlas al mismo tiempo. Vamos a tomar la información tectónica al rededor del volcán y el tipo de rocka más importante:
+```{r}
+volcano_new <- volcano %>% 
+  transmute(
+    id_volcano = volcano_number,
+    volcano_type = case_when(
+      str_detect(primary_volcano_type, "Stratovolcano") ~ "Stratovolcano",
+      str_detect(primary_volcano_type, "Shield") ~ "Shield",
+      TRUE ~  "Other"
+                            ),
+    latitude,
+    longitude,
+    elevation,
+    tectonic_settings,
+    major_rock_1,
+    population_within_5_km
+  ) %>%  mutate_if(is.character, factor)
+
+head(volcano_new)
+```
+
+Ahora podemos contar cuantos volcanes hay por cada tipo:
+```{r}
+volcano_new %>% 
+  count(volcano_type, sort = TRUE)
+```
+
+# Creando el primer gráfico en `ggplot2`
+
+Como habíamos dicho, `ggplot2` trabaja por capas, es decir, vamor a adicionar primero nuestro plano y luego vamos adicionando líneas, puntos, diagramas como capas. Utilizaremos la función `ggplot()` de la paquetería `ggplto2`, donde el primer dato será los datos y luego pondremos los ejes, sin especificar qué tipo de visualización queremos. Por lo tanto nuestra primera capa será una visualización en blanco especificando los ejes de nuestros datos.
+
+Para ayudarnos con las visualizaciones, podemos tomar en cuenta [*cheat sheet de ggplot2*](https://www.maths.usyd.edu.au/u/UG/SM/STAT3022/r/current/Misc/data-visualization-2.1.pdf), la cual nos da tips para hacer visualizaciones.
+
+  ![](https://raw.githubusercontent.com/rstudio/cheatsheets/main/pngs/data-visualization.png)
+
+En la primera visualización queremos ver la relación entre la elevación y la poblacicón a menos de 5 km (`elevation` vs `population_within_5_km`). Vamos a crear la primera capa con esta información.
+
+```{r}
+# Usando programación convencional
+ggplot(volcano_new, aes(x=elevation, y = population_within_5_km))
+
+# Usando pipe
+volcano_new %>% 
+  ggplot(aes(x=elevation, y = population_within_5_km))
+```
+
+Como podemos ver, la primera capa lo único que incluye son los datos de los ejes que vienen del dataset `volcano_new`, si queremos ver una visualización con puntos debemos agregar una nueva capa que especifique queremos una visualización por puntos. Para adicionar una nueva capa, lo hacemos por medio de un símbolo de más (+) y especificamos lo que deseamos, que este caso vamos a poner la funión `geom_point()`, como a continuación:
+```{r}
+volcano_new %>% 
+  ggplot(aes(x=elevation, y = population_within_5_km))+
+  geom_point()
+```
+
+Otra forma de hacer nuestra visualización, es especificar sólo en la primera capa nuestros datos y luego dentro de la función `geom_point()` especificar los ejes. Solo hayq ue tener en cuenta que si deseamos adicionar una visualización nueva, por ejemplo con líenas, debemos de volver a especificar los ejes dentro de la función  `geom_line()`.
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, y = population_within_5_km))
+```
+
+ahora, queremos que los puntos estén por color por cada tipo de volcán, para esto, en los ejes, especificamos como `color =` la variable que queremos que se pinte con las diferentes clases:
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, 
+                           y = population_within_5_km, 
+                           color = volcano_type))
+```
+
+También podemos hacer que los puntos cambien por tamaño según una variable con la función `size = ` dentro de los ejes:
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, 
+                           y = population_within_5_km, 
+                           size = volcano_type))
+```
+
+También podemos asugbar a una variable la función `alpha =` para controlar la transparencia según ella y también la función `shape =` para que los puntos cambien de forma según la variable. Para el ejemplo que estamos usando, vamos a combinar, por ejemplo,  forma y color.
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, 
+                           y = population_within_5_km, 
+                           shape = volcano_type, 
+                           color = volcano_type)
+            )
+```
+
+También puedes fijar las propiedades estéticas de tu `geom` manualmente. Por ejemplo, podemos hacer que todos los puntos de la visualización sean azules:
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, 
+                           y = population_within_5_km),
+             color = "blue" # Este va fuera de la especificación de los ejes
+            )
+```
+
+Par aeste caso, el color no da información sobre una variable, sino que cambia la apariencia de la visualización. Para establecer una estética de forma manual, debes usar el nombre de la estética como un argumento de la función `geom`; es decir, va fuera de `aes()`. Para una mejor visualización, debemos elegir un nivel que tenga sentido:
+
+- El nombre de un color como cadena de caracteres.
+
+- El tamaño de un punto en mm.
+
+- La forma de un punto como un número.
+
+  ![](https://es.r4ds.hadley.nz/03-visualize_files/figure-html/shapes-1.png){width=60%}
+
+## Ejercicio 1
+
+- ¿Qué pasa si en color azul (blue), lo ponemos dentro de los ejes?
+
+- ¿Por qué no se ponen azules los puntos?
+
+- Asigna una variable continua a `color`, `size` y `shape` ¿Cómo se comportan estas variables respecto a las variables categóricas?
+
+- ¿Qué ocurre si asinas varios mapeos (`color`, `size`, `shape`, etc) a una misma variable categórica?
+
+- ¿Qué hace la estética `stroke`? ¿Con qué formas trabaja? (Pista: consulta `?geom_point` con el amigo google)
+
+- ¿Qué ocurre si se asigna o mapea una estética a algo diferente del nombre de una variable, como aes(color = latitude < 20)?
+
+## Separar en facetas
+
+Una forma particularmente útil para las variables categóricas consiste en dividir el gráfico en facetas, es decir, sub-gráficos que muestran cada uno un subconjunto de los datos.
+
+Para separar en facetas un gráfico según una sola variable, utiliza la función `facet_wrap()` (del inglés envolver una faceta). El primer argumento de `facet_wrap()` debería ser una fórmula creada con `~` seguida del nombre de una de las variable (aquí “fórmula” es el nombre de un tipo de estructura en R, no un sinónimo de “ecuación”). *La variable que uses en `facet_wrap()` debe ser categórica.*
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, 
+                           y = population_within_5_km))+
+  facet_wrap(~volcano_type, nrow = 1)
+```
+
+Para separar en facetas un gráfico según las combinaciones de dos variables, agrega la función `facet_grid()` a tu código de la visualización. El primer argumento de la función `facet_grid()` también corresponde a una fórmula (`~`). Esta vez, la fórmula debe contener dos nombres de variables separados por un `~`. La primera variable irá en las filas y la segunda en las columnas (como tipo matriz).
+
+```{r}
+volcano_new %>% ggplot() +
+  geom_point(mapping = aes(x=elevation, 
+                           y = population_within_5_km))+
+  facet_grid(tectonic_settings ~ volcano_type)
+```
+
+Si prefieres no separar en facetas las filas o columnas, remplaza por un . el nombre de alguna de las variables, por ejemplo `+ facet_grid(. ~ volcano_type)`.
+
+## Ejercicio 2
+
+1. ¿Qué ocurre y separas en facetas con una variable continua?
+
+2. Lee `?facet_wrap` o googlealo. ¿Qué hace `nrow`? ¿Qué hace `ncol`? ¿Qué otras opciones controlan el diseño de los paneles individuales? ¿Por qué `facet_grid()` no tiene argumentos `nrow` y `ncol`?
+
+3. Cuando usas `facet_grid()`, generalmente deberías poner la variable con un mayor número de niveles únicos en las columnas. ¿Por qué?
+
+## Objetos geométricos
+
+Antes de comenzar con esta sección, vamos a cargar los datos de las viviendas de 506 secciones censales de Boston del censo de 1970. La base de datos Boston Housing contiene los datos originales de Harrison y Rubinfeld (1979), el marco de datos BostonHousing 2 es la versión corregida con información espacial adicional.
+
+Esta información esta incluida en la biblioteca `mlbench`. Para descargar los datos, debemos instalar este paquete con la función `install.packages("mlbench")`. Los datos tienen las siguientes características
+
+- `crim` - Crimen per cápita por ciudad
+
+- `zn` - proporción de terrenos residenciales divididos en zonas para lotes de más de 25,000 pies cuadrados (Que tan lleno esta un lote)
+
+- `indus` - proporción de acres de negocios no minoristas por ciudad
+
+- `chas` - variable ficticia de Charles River (= 1 si el tramo limita el río, 0 de lo contrario)
+
+- `nox` - concentración de óxidos nítricos (partes por 10 millones)
+
+- `rm` - número promedio de habitaciones por vivienda
+
+- `age` - proporción de unidades ocupadas por sus propietarios construidas antes de 1940
+
+- `dis` - Distancias desproporcionadas a cinco centros de empleo de Boston
+
+- `rad` - índice de accesibilidad a las autopistas radiales
+
+- `tax` - tasa de impuesto a la propiedad de valor completo por USD 10,000
+
+- `ptratio` - colegios por localidad
+
+- b 1000 (B - 0,63)^ 2, donde B es la proporción de negros por ciudad
+
+- `lstat` - porcentaje de estado inferior de la población
+
+- `medv` - valor mediano de las viviendas ocupadas por sus propietarios en USD 1000
+
+```{r}
+library(mlbench) 
+data(BostonHousing) #llamar db incorporada en la librería uso:data
+housing <- BostonHousing
+str(housing)
+```
+
+Para comenzar vamos a hacer una visualización de dos variables, por ejemplo el precio de la casa vs el número promedio de habitaciones por vivienda:
+```{r}
+housing %>% ggplot()+
+  geom_point(aes(x=medv, y=rm))
+```
+
+Podemos graficar una tendencia suavizada con la función `geom_smooth()`
+```{r}
+housing %>% ggplot()+
+  geom_smooth(aes(x=medv, y=rm))
+```
+
+Para una línea podrías elegir el tipo de línea (`linetype`). `geom_smooth()` dibujará una línea diferente, con un tipo de línea distinto (`linetype`), para cada valor único de la variable que asignes al tipo de línea (`linetype`).
+
+Para poder hacer esto necesitamos una variable categórica, podemos crearla usando el paquete `dplyr` de `tidyverse`.
+```{r}
+housing <- housing %>% mutate(new_house = if_else(age < 10, "yes", "not"))
+housing
+```
+
+```{r}
+housing %>% ggplot()+
+  geom_smooth(aes(x=medv, y=rm,linetype = new_house))
+```
+
+o también lo podemos hacer por color
+```{r}
+housing %>% ggplot()+
+  geom_smooth(aes(x=medv, y=rm, color = new_house))
+```
+
+También podemos agregar las capas de los puntos:
+
+```{r}
+housing %>% ggplot()+
+  geom_smooth(aes(x=medv, y=rm, color = new_house))+
+  geom_point(aes(x=medv, y=rm, color = new_house))
+```
+
+como aquí estamos usando los mismos datos en los ejes, es más facil si podemos los ejes desde la función de `ggplot`:
+
+```{r}
+housing %>% ggplot(aes(x=medv, y=rm, color = new_house))+
+  geom_smooth()+
+  geom_point()
+```
+
+si colocamos el mapeo sólo en la función `geom_point()` veamos qué sucede:
+```{r}
+housing %>% ggplot(aes(x=medv, y=rm))+
+  geom_smooth()+
+  geom_point(aes(color = new_house))
+```
+
+## Ejercicio 3
+
+1. ¿Qué geom usarías para generar un gráfico de líneas? ¿Y para un diagrama de caja? ¿Y para un histograma? ¿Y para un gráfico de área?
+
+2. Sin ejecutar el código todavía, qué crees que hará o que se mostrará en la visualización. Compueba ejecutando.
+
+```{r}
+housing %>% ggplot(aes(x=medv, y=rm, color = new_house))+
+  geom_smooth(se = FALSE)+
+  geom_point()
+```
+
+3. Con lo anterior, ¿Qué hace el argumento `se` de `geom_smooth()`?
+
+4. ¿Qué muestra `show.legend = FALSE`? ¿Qué pasa si lo quitas? ¿Por qué crees que lo utilizamos antes en el capítulo?
+
+## Gráficos de barras
+
+ Los gráficos de barras parecen simples, pero son interesantes porque revelan algo sutil sobre los gráficos. Considera un gráfico de barras básico, como uno realizado con `geom_bar()`. Asingando una variable categórica en uno de los ejes, el otro eje en automático te va a mostrar el conteo por categorías.
+ 
+```{r}
+housing %>% ggplot()+
+  geom_bar(aes(x=new_house))
+
+```
+ 
+Muchos gráficos, como los diagramas de dispersión (`scatterplots`), grafican los valores brutos de un conjunto de datos. Otros gráficos, como los de barras, calculan nuevos valores para presentar:
+
+- Los gráficos de barras, los histogramas y los polígonos de frecuencia almacenan los datos y luego grafican los conteos por contenedores (`bins`), es decir, el número de puntos que caen en cada contenedor.
+
+- Los gráficos de líneas suavizadas (`smoothers`) ajustan un modelo a los datos y luego grafican las predicciones del modelo.
+
+- Los diagramas de caja (`boxplots`) calculan un resumen robusto de la distribución y luego muestran una caja con formato especial.
+
+El algoritmo utilizado para calcular nuevos valores para un gráfico se llama `stat`, abreviatura en inglés de transformación estadística (statistical transformation). 
+
+También podemos hacer agrupaciones en los datos y realizar diagrámas de barras.
+
+Ahora bien, si en lugar que el quisiera tener el conteo, queremos que se muestre la proporción, utilizamos la función `stat()` en el eje `y`
+
+```{r}
+housing %>% ggplot()+
+  geom_bar(aes(x=new_house, y= stat(prop), group=1))
+
+```
+
+Es posible que desees resaltar la transformación estadística en tu código. Por ejemplo, puedes usar `stat_summary()`, que resume los valores de y para cada valor único de x, para así resaltar el resumen que se está computando:
+
+```{r}
+housing %>% ggplot()+
+  stat_summary(
+   aes(x=new_house, y = medv),
+   fun.min = min,
+   fun.max = max,
+   fun = median
+  )
+```
+
+
+`ggplot2` proporciona más de 20 transformaciones estadísticas para que uses. Cada stat es una función, por lo que puedes obtener ayuda de la manera habitual, por ejemplo: `?stat_bin`. Para ver una lista completa de transformaciones estadísticas disponibles para `ggplot2`, consulta la hoja de referencia.
