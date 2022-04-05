@@ -1,0 +1,305 @@
+---
+title: 'R para Data Science'
+author: 'Profesora: Dra. Diana Paola Montoya Escobar, diana.montoya@iteso.mx'
+date: "Enero 2022"
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+    theme: cosmo
+    highlight: tango
+  github_document:
+    toc: yes
+    dev: jpeg
+  html_document:
+    toc: yes
+    df_print: paged
+subtitle: 'Paquete `dplyr` de `tidyverse`'
+---
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo= TRUE,
+                      fig.height = 6, fig.width = 7)
+```
+
+<style>
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+</style>
+
+<center>
+![](https://bookdown.org/BEST/DSFA/images/Rlogo.png){width=10%}
+  ![](http://oci02.img.iteso.mx/identidad_de_instancia_2018/ITESO/Logos%20ITESO/Logo-ITESO-Principal.jpg){width=35%}
+
+
+</center>
+
+# `data_frame` *Volcano eruptions*
+
+Para comenzar a utilizar R, utilizaremos los datos de erupciones de volcanes de [TidyTuesday](https://github.com/rfordatascience/tidytuesday), el cual es un repositorio de github, que contiene muchos `datasets` para su exploración de forma gratuita.
+
+Los datos los pueden encontrar en la página del repositorio de [TidyTyesdat: Volcano Eruptions](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-05-12/readme.md).Este dataset provene de [The Smithsonian Institution](https://volcano.si.edu/), donde [Axios](https://www.axios.com/chart-every-volcano-that-erupted-since-krakatoa-467da621-41ba-4efc-99c6-34ff3cb27709.html) reunió una hermosa trama de erupciones volcánicas desde Krakatoa (después de 1883) por elevación y tipo.
+
+Antes de comenzar, lo primero que debemos de hacer es cargar la(s) librería(s) de R, para este caso, utilizaremos `tidyverse`.
+```{r}
+library("tidyverse")
+```
+
+
+Para cargar los datos desde un html, usamos la función `read_csv`, si tuviéramos el archivo guardado en nuestro computador, lo podemos cargar de la misma forma solo que en lugar la dirección de internet, ponemos la dirección donde se encuentra guardado nuestro archivo, seguido el nombre del archivo, como se muestra a continuación
+
+```{r}
+```
+
+
+```{r}
+volcano <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv")
+```
+
+Si estamos utilizando un proyecto de R, lo único que necesitamos es colocar el nombre el archivo que deseamos leer.
+
+En nuestro *Environment* se ha guardado un `data_frame` con el nombre `volcano`, el cual contiene 958 observaciones (filas) y 26 variables (columnas).
+
+Para ver el `data_frame` como una tabla, damos doble clik en el objeto `volcano` o usamos la función `view(voltano)`.
+
+Para ver las variables que contiene el conjunto de datos utilizamos la función  `colnames()`, esto lo que hace es mostrarnos el nombre de todas las columnas.
+```{r}
+colnames(volcano)
+```
+Podemos ver solo los primeros renglones de nuestro `data_frame` utilizando la función  `head()`, que por defecto nos muestra las primeras 6 líneas. Si queremos ver otro número distinto de líenas, luego de los datos ponemos una coma y colocamos el número que deseemos:
+```{r}
+head(volcano)
+```
+```{r}
+head(volcano,1)
+```
+
+Si queremos ver sólo una columna del `data_frame`, podemos llamarla con el nombre de nuestros datos seguida del signo de pesos. Nos mostrará las columnas que tenemos y podemos escribir o seleccionar la que queremos ve, y nos va mostrar un único vector con los valores que tenga esta columna. Para este caso, adicionaré la función `head()` para que nos muestre sólo los primeros 6 registros.
+
+```{r}
+head(volcano$country)
+```
+
+
+Si queremos ver un resumen de los datos en general lo podemos hacer con la función `summary()`:
+```{r}
+summary(volcano)
+```
+
+Al modificar nuestros datos con `tidyverse`, los datos cambian a formato `tibble`. Los `tibbles` son ``data_frames``, pero modifican algunas características antiguas para hacernos la vida más fácil. *R* es un lenguaje de programación que ya tiene sus años y algunas cosas que eran útiles hace 10 o 20 años actualmente pueden resultar inconvenientes. Es difícil modificar R base sin romper código existente, así que la mayor parte de la innovación ocurre a través de paquetes. 
+
+*Consulta las diferencias principales entre un `data_frame` y un `tibble`.*
+
+Comencemos a utilizar el *pipe* (`%>%`). Queremos tomar primero los datos `volcano` y luego hacer un conteo por tipo de volcanes y que estén ordenamos del que contenga mayor número de volcanes al menor:
+```{r}
+volcano %>% count(primary_volcano_type,sort = TRUE)
+```
+
+Como podemos ver, al utilizar el comendo del pipe, se nos ha transformado a `tibble`.
+
+Si queremos hacer un filtro para ver los datos de un tipo de volcán, por ejemplo `Caldera`, lo podemos hacer con la función `filter`. Para esto lo haremos de la forma convensional y utilizando ` %>% ` para ver la diferencia.
+```{r}
+# Forma convencional
+filter(volcano,primary_volcano_type == 'Caldera')
+```
+
+Aquí lo que tenemos es que dentro de la función `filter ponemos los datos`. Utilizando el pipe (`%>%`) lo que hacemos es llamar primero los datos y luego hacemos el filtro, sin necesidad de poner los datos entro de la función, así:
+```{r}
+volcano %>% filter(primary_volcano_type == 'Caldera')
+```
+
+Llegamos al mismo resultado, pero, ¿entonces cuál es la ventaja de usas el pipe? la respuesta es que luego de hacer esto podemos seguir utilizando la misma línea con otro pipe y seguir transformando nuestros datos, en el otro caso, tendríamos que asignar un nombre y volver a crear una nueva línea y volverlo a guardar.
+
+De ahora en adelante, en la mayoría de los casos usaremos el pipe (`%>%`), para la programación en R. Puedes escribirlo de forma fácil con *ship+control+m* para usuarios windows y linux, y para mac *ship+command+m*, o si gustas puedes escribirlo directo en el teclado.
+
+Creemos una cadena, primero queremos filtrar por `primary_volcano_type == 'Caldera'` y "luego" seleccionar sólo las variables `volvano_name` y `last_eruption_year`:
+```{r}
+volcano %>% filter(primary_volcano_type == 'Caldera') %>% select(volcano_name, last_eruption_year)
+```
+
+# El paquete `dplyr`
+
+El paquete `dplyr`, contenido dentro de `tidyverse`, fue desarrollado por Hadley Wickham de RStudio y es una versión optimizada de su paquete `plyr` (el cual no utilizaremos directmente). 
+
+Una importante contribución del paquete `dplyr` es que proporciona una "gramática" (particularmente verbos) para la manipulación y operaciones con `data_frames`, que usamos en los ejemplos anteriores. Con esta gramática podemos comunicar mediante nuestro código que es lo que estamos haciendo en los `data_frames` a otras personas (asumiendo que conozcan la gramática). Esto es muy útil, ya que proporciona una abstracción que anteriormente no existía. Por último, cabe destacar que las funciones del paquete `dplyr` son muy rápidas, puesto que están implementadas con el lenguaje `C++`.
+
+## La gramática de `dplyr`
+
+Algunas de las principales funciones del paquete `dplyr` son:
+
+- `select()`: devuelve un conjunto de columnas seleccionadas, si ponemos el signo negativo (`-`) lo que hace es quitarnos la variable que esté antecedida de este signo.
+- `filter()`: devuelve un conjunto de filas según una o varias condiciones lógicas, puedes usar (==, >=, <=, !=, etc)
+- `arrange()`: reordena filas de un `data_frame`
+- `rename()`: renombra variables (columnas) en una `data_frame`
+- `mutate()`: añade nuevas variables/columnas o transforma variables existentes cuando le asingamos el mismo nombre
+- `transmute`: modifica el `data_frame` según las columnas que le pongamos o transformemos. Las que no se encuentren dentro de esta función las elimina.
+- `group_by()`: hace agrupaciones según la condición que le asignemos.
+- `summarise/summarize()`: genera resúmenes estadísticos de diferentes variables en el `data_frame`, posiblemente con `strata`
+- `%>%`: el operador "pipe" es usado para conectar múltiples acciones en una única "pipeline" (tubería) o lo podemos ver como un *luego*.
+
+## `select()`
+
+Continuando con el dataset de volcanes, vamos a hacer selecciones y quitar columnas del `data_frame`
+```{r}
+volcano %>%  select(-volcano_number)
+```
+
+También podemos seleccionar rangos de columnas usando dos puntos (`:`):
+```{r}
+volcano %>% select(volcano_name:last_eruption_year)
+```
+o eliminar el rango de las columnas con el signo negativo (`-`):
+```{r}
+volcano %>% select(-(volcano_name:last_eruption_year))
+```
+
+También podemos utilizar la función `starts_with()`, la cual nos dará las columnas que comiencen con lo que le indiquemos en el paréntesis. Y la función  `end_with()` la columna que termine con lo que le asignemos en el paréntesis.
+```{r}
+volcano %>% select(starts_with("vol"))
+```
+```{r}
+volcano %>%  select(ends_with("r"))
+```
+
+o la función `contains()`, selecciona las columnas que contengan lo que escribamos dentro del paréntesis:
+```{r}
+volcano %>%  select(contains("vol"))
+```
+
+Resumen de la función `select()`, que a partir de la tercera fila son propias del paquete `dply`:
+
+| Función  | Descripción    | 
+|----------- |-------------|
+| -                 | Selecciona todas las varia les excepto las que tengan signo negativo    | 
+| :                 | selecciona un rango  | 
+| `contains()`      | Selecciona la variable que contenga la cadena de texto  |
+| `start_with()`    | Selecciona la variable que comience la cadena de texto  |
+| `end_with()`      | Selecciona la variable que termine la cadena de texto  |
+| `everything()`    | Selecciona todas las variables  |
+| `matches()`       | Selecciona las variables cuyos nombres coinciden con una expresión regular  |
+| `num_range()`     | Selecciona las variables por posición  |
+
+
+## `filter()`
+
+Esta función nos permite filtrar según una condición:
+
+```{r}
+volcano %>% filter(as.integer(last_eruption_year)>=2000)
+```
+
+Podemos hacer dentro de la misma línea varios filtros:
+```{r}
+volcano %>% filter(as.integer(last_eruption_year)>=2000,
+                   primary_volcano_type == 'Stratovolcano')
+```
+
+Resumen de la función `filter()`:
+
+| Función  | Descripción    | 
+|----------- |-------------|
+| `<` | Menor que |
+| `>` | Mayor que |
+| `<=` | Menor o igual que |
+| `>=` | Mayor o igual que |
+| `==` | Igual que|
+| `!=` | Distinto que |
+| `%in%` | Pertenece al conjunto |
+| `is.na` | Es NA |
+| `!is.na` | No es NA|
+| `&` | and (y) |
+| `\` | or (o) |
+| `xor` | or inclusivo |
+| `!` | not |
+| `any` | Cualquiera true|
+| `all` | Todos los verdaderos |
+
+Un ejemplo de boleano
+```{r}
+volcano %>% filter(as.integer(last_eruption_year)>=2000  & elevation <= 500)
+```
+
+## arrange()
+
+La función `arrange()` se utiliza para ordenar las filas de un `data_frame` de acuerdo a una o varias columnas/variables.
+
+Por defecto `arrange()` ordena las filas por orden ascendente:
+
+```{r}
+volcano %>% arrange(last_eruption_year)
+```
+
+Si lo queremos ordenar de forma ascendente adicionamos la función `desc()`
+```{r}
+volcano %>% arrange(desc(last_eruption_year))
+```
+
+Podemos ordenar también según varias variables:
+```{r}
+volcano %>% arrange(primary_volcano_type, last_eruption_year)
+```
+
+## `rename()`
+
+Renombra las viables de un `data_frame`:
+```{r}
+volcano %>% rename(year = last_eruption_year) %>% colnames()
+```
+
+## `mutate()`
+
+Con la función `mutate()` podemos hacer tranformaciones o generar nuevas variables de variables en un `data_frame`.
+```{r}
+volcano %>% mutate(`region Mexico`= if_else(region== "México and Central America",1,0),
+                   country = if_else(country == 'Mexico',"México"," ") 
+                   )
+```
+
+## `transmute()`
+
+Es muy similar a la función `mutate()`, solo que nos transforma el `data_frame` con las variables que asignemos en el `transmute()`:
+
+```{r}
+volcano %>% transmute(`region Mexico`= if_else(region== "México and Central America",1,0),
+                   country = if_else(country == 'Mexico',"México"," ") 
+                   )
+```
+
+## `group_by()` y `summarise()`
+
+La función `group_by()` nos agrupa según la variable que le indiquemos y la función `summarise()` nos da un resumen de esta agrupación.
+
+```{r}
+volcano %>% group_by(primary_volcano_type) %>% summarise(mean_elevation = mean(elevation))
+```
+
+Las funciones que podemos utilizar dentro del `summarise()` son las siguientes;
+
+| Función  | Descripción    | 
+|----------- |-------------|
+|`min()`, `max()`	|Valores max y min|
+|`mean()`|	media|
+|`median()`|	mediana|
+|`sum()`|	suma de los valores|
+|`var()`, sd()|	varianza y desviación |
+
+Funciones propias de `dplyr`:
+
+| Función  | Descripción    | 
+|----------- |-------------|
+|`first()`	|primer valor en un vector|
+|`last()`	|el último valor en un vector|
+|`n()`	|el número de valores en un vector|
+|`n_distinct()`|	el número de valores distintos en un vector|
+|`nth()`	|Extrae el valor que ocupa la posición n en un vector|
+
+## Operador pipe ` %>% `
+
+Este operador lo podemos interpretar como un luego y agrupar varias de las funciones empleadas anteriormente para generar un nuevo `data_frame` con una sola línea de código:
+
+```{r}
+volcano %>% transmute(`region Mexico`= if_else(region== "México and Central America",1,0),
+                   country = if_else(country == 'Mexico',"México"," "),
+                   elevation
+                   ) %>% group_by(country,`region Mexico` ) %>% summarise(mean_elevation =mean(elevation),
+                                                         max_elevation = max(elevation),
+                                                         num_volcanos = n())
+```
