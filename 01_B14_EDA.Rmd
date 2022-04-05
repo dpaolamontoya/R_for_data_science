@@ -1,0 +1,489 @@
+---
+title: 'R para Data Science'
+author: 'Dra. Diana Paola Montoya Escobar, dpmtontoy@gmail.com'
+date: "Enero 2022"
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+    theme: cosmo
+    highlight: tango
+  github_document:
+    toc: yes
+    dev: jpeg
+  html_document:
+    toc: yes
+    df_print: paged
+subtitle: 'Analisis Exploratorio'
+---
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo= TRUE,
+                      fig.height = 6, fig.width = 7)
+```
+
+<style>
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+</style>
+
+<center>
+![](https://bookdown.org/BEST/DSFA/images/Rlogo.png){width=10%}
+</center>
+
+# Análisis Exploratorio de datos (EDA)
+
+El análisis exploratorio, EDA (exploratory data analysis), se trata de entender los datos por medio de transformaciones y visualización de los mismos.  En este análisis lo primero que surgen son preguntas que queremos responder por medio de los datos, la transformación y de ellos y las visualizaciones nos ayudarán a resolver esos interrogantes y dará pie a nuevos interrogantes y conclusiones.
+
+Este proceso es más de investigación, de entender el problema para luego entender los datos, ¿Qué pasó? ¿Cómo pasó? ¿Por qué pasó? Este hace parte de la analítica descriptiva y diagnóstica. 
+
+El EDA es una parte muy importante de cualquier análisis, así tus respuestas sean muy obvias, pues siempre tendrás que examinar la calidad de tus datos. La limpieza de datos es una aplicación del EDA: se genera una pregunta acerca de si tus datos cumplen con tus expectativas o no. Para limpiar tus datos tendrás que desplegar todas las herramientas del EDA: visualización, transformación y modelado.
+
+Para hacer este análisis en R, utilizaremos principalmente dos paqueterías: 
+
+- `tidyverse`, dentro de este paquete usaremos principalmente los paquetes `dplyr` para la transformación y `ggplot2` para visualización; y 
+
+- `DataExplorer`, este es un paquete que nos ayuda a generar visualizaciones de forma automática y nos ayuda a entender los datos (varianza, missing values, distribuciones, correlaciones, dispersiones, entre otros). Recuerda instalar tu paquete con la función `install.packages("DataExplorer")`.
+
+Para poder iniciar, primero debemos cargar las librerías y los datos, estos últimos los tomaremos de la librería de `datos`:
+
+```{r}
+library(tidyverse)
+library(DataExplorer)
+library(datos)
+```
+
+Antes de comenzar con el análisis, es importantes tener en cuenta algunas definiciones:
+
+- *Una variable* es una cantidad, cualidad o característica mesurable, es decir, que se puede medir (una columna del dataset).
+
+- *Un valor* es el estado de la variable en el momento en que fue medida. El valor de una variable puede cambiar de una medición a otra (registro).
+
+- *Una observación* es un conjunto de mediciones realizadas en condiciones similares (usualmente todas las mediciones de una observación son realizadas al mismo tiempo y sobre el mismo objeto). Una observación contiene muchos valores, cada uno asociado a una variable diferente. En algunas ocasiones nos referiremos a una observación como un punto específico (data point).
+
+- *Los datos tabulares* (tabular data) son un conjunto de valores, cada uno asociado a una variable y a una observación. Los datos tabulares están ordenados si cada valor está almacenado en su propia “celda”, cada variable cuenta con su propia columna, y cada observación corresponde a una fila.
+
+## Variación
+
+La *variación* es la tendencia de valores de una variable a cambiar de una medición a otra. Las variables numéricas, nos dan indicios de cómo se comporta ella misma o como varía dependiendo de su distribución. Las variables categóricas también pueden variar si realizas mediciones con diferentes sujetos. La variación de cada variable sigue un patrón específico y este puede revelar información interesante. La mejor manera de entender dicho patrón es visualizando la distribución de los valores de la variable.
+
+### Datos que utilizaremos (`data = diamantes`)
+
+De la paquetería de `datos`, utilizaremos el dataset `diamantes`, para obtenerlos, así no este en nuestro Enviroment, se ve como una función del paquete `datos`:
+```{r}
+diamantes
+```
+
+Si queremos guardarlo en nuestro ambiente de trabajo, le asignamos un nombre:
+```{r}
+data <- diamantes
+summary(data)
+```
+
+### Visualización de distribuciones
+
+Para realizar la visualización de una variable categórica, lo realizamos por medio de un gráfico de barras. Suponiendo que queremos ver la distribución de la variable `corte`: 
+
+```{r}
+data %>% ggplot()+geom_bar(aes(x=corte))
+```
+
+La altura de las barras muestra cuántas observaciones corresponden a cada valor de x. Puedes calcular estos valores con `dplyr::count()`
+
+```{r}
+diamantes %>% count(corte)
+```
+
+
+Una variable es continua si puede adoptar un set infinito de valores ordenados. Los números y fechas-horas son dos ejemplos de variables continuas. Para examinar la distribución de una variable continua, usamos  un histograma de frecuencias por medio de la función `geom_histogram()` de `ggplot2`, por ejemplo, queremos ver la distribución de la variable `quilate`:
+
+```{r}
+data %>% ggplot()+geom_histogram(aes(x=quilate))
+```
+
+Para cambiar la clase a una definida, usamos la opción `binwidth =`:
+
+```{r}
+data %>% ggplot()+geom_histogram(aes(x=quilate),binwidth = 0.5)
+```
+
+Si quieres el cálculo manual se puede lograr con dos funciones: `dplyr::count()` y `ggplot2::cut_width()`:
+```{r}
+data %>% count(cut_width(quilate, 0.5))
+```
+
+Si la idea es realizar una visualización de varias distribuciones que dependa de una variable categórica, seguimos con la misma idea que veníamos de las visualizaciones en `ggplot2`. Por ejemplo queremos ver la distribución de la variable `quilate` y que sean varias dependiendo de la categoría `corte` y que en lugar de barras veamos líneas usando la función `geom_freqpoly()`:
+```{r}
+data %>% ggplot() + geom_freqpoly(aes(x=quilate, colour = corte), binwidth = 0.1)
+```
+
+Ahora que ya sabemos realizar algunas visualizaciones, deberíamos hacernos algunas preguntas: ¿qué debería buscar en las visualizaciones? ¿Y qué tipo de preguntas de seguimiento debería hacer?  La clave para hacer buenas preguntas será confiar en la curiosidad (¿qué necesitamos saber de más?), así como en tu escepticismo (¿de qué manera podría ser esto engañoso?).
+
+Algunas de las preguntas más frecuentes que nos hacemos en el momento de realizar el análisis exploratorio es acerca de *los valores típicos*, por ejemplo.
+
+¿Cuáles valores son los más frecuentes, menos frecuentes, patrones raros? ¿Por qué?
+
+Por ejemplo, para el histograma anterior, podríamos dividir mucho más la clase para ver cuales son los valores más usuales. Si usamos `binwidth = 0.01`, podemos observar un patrón entre los quilates. También como vemos que no hay quilates mayores a 3 podemos hacer un filtro de nuestros datos:
+
+```{r}
+data %>% filter(quilate<3) %>%  ggplot()+geom_histogram(aes(x=quilate), binwidth = 0.01)
+```
+
+# Outliers
+
+Los valores atípicos o outliers, son puntos que se salen del patrón de los demás datos. Algunas veces dichos valores atípicos son errores cometidos durante la ingesta de datos; otras veces sugieren nueva información. Cuando tienes una gran cantidad de datos, es difícil identificar los valores atípicos en un histograma o en un diagrama de cajas y bigotes. Para el caso de los datos de `diamantes` esto sucede para la variable `y`:
+```{r}
+data %>% ggplot()+geom_histogram(aes(x=y), binwidth = 0.5)
+```
+
+Hay muchas observaciones con frecuencias de más de 12000 es por eso que no vemos los pocos datos que hay en valores lejanos de y. Para verlos tenemos dos opciones, la primera es usar la misma visualización pero poner el eje más corto:
+```{r}
+data %>% ggplot()+geom_histogram(aes(x=y), binwidth = 0.5)+coord_cartesian(ylim=c(0,30))
+```
+
+la otra opción es hacer un diagrama de cajas y bigotes
+```{r}
+data %>% ggplot() + geom_boxplot(aes(x=y))
+```
+
+
+Esto nos indica que hay tres valores inusuales: ~0, ~30 y ~60. Podemos filtrar nuestros datos y verlos en una tabla con `dplyr`:
+```{r}
+outliers <- data %>% filter(y < 3 | y > 20) %>% arrange(y)
+outliers 
+```
+
+La variable `y` mide una de las tres dimensiones de estos diamantes en mm (milímetros). Sabemos que los diamantes no pueden tener una anchura de 0mm, así que estos valores deben ser incorrectos. Es un buen hábito repetir tu análisis con y sin los valores inusuales.
+
+# Missing values
+
+Cuando tenemos outliers tenemos dos opciones, una es eliminar todo el registro y otra es solo eliminar el valor y convertirlo a `NA`. La primera opción muchas veces no es recomendable porque eliminamos información de otras variables que quizá no presentan el mismo problema.
+
+Si deseas eliminar estos valores, lo podemos hacer por medio de un filtro:
+```{r}
+data %>% filter(between(y,3,20))
+```
+
+Por otro lado, para eliminar solo el valor y convertirlo en NA, podemos hacerlo con la función `mutate()`, así:
+```{r}
+data1 <- data %>% mutate(y = ifelse(y<3 | y >20, NA,y)) 
+```
+
+Realizando la visualización de las variables `x` contra `y` con la función `ggplot()`, nos va a aparecer una advertencia que no inlcuye dentro de sus gráficos valores con `NA`:
+```{r}
+data1 %>% ggplot() + geom_point(aes(x,y))
+```
+
+Para eliminar esa alerta, define `na.rm = TRUE` en la función `geom_poin()`:
+```{r}
+data1 %>% ggplot() + geom_point(aes(x,y), na.rm = TRUE)
+```
+
+# Covarianza
+
+Si la variación describe el comportamiento dentro de una variable, la covariación describe el comportamiento entre variables.
+
+## Una variable categórica y una continua
+
+En algunas ocasiones, queremos ver las distribuciones de una variable continua discriminada por las clases de una variable categórica. La visualización usando `geom_freqpoly()` no es tan útil para este tipo de comparación, pues la altura está dada por la cuenta total. Eso significa que si uno de los grupos es mucho más pequeño que los demás, será difícil ver las diferencias en altura. 
+
+```{r}
+data1 %>% ggplot()+ geom_freqpoly(aes(x=precio, colour=corte), binwidth = 500)
+```
+
+Para facilitar esta comparación necesitamos cambiar lo que se muestra en el eje vertical. En lugar de mostrar la cuenta total, mostraremos la densidad, que es lo mismo que la cuenta estandarizada de manera que el área bajo cada polígono es igual a uno.
+
+```{r}
+data1 %>%  ggplot()+geom_freqpoly(aes(x=precio, y=..density.., colour = corte),binwidth = 500)
+```
+
+Lo que nos está indicando esta visualización, es que al parecer, la calidad más baja la tienen los diamantes regulares y en medio el precio más alto. 
+
+Otra opción para mostrar una distribución de una variable continua es por medio de los diagramas de cajas y bigotes. En `ggplot2` lo exploramos con la función `geom_boxplot()`. Para recordar su interpretación, la caja comprende desde el percentil 25 de la distribución hasta el percentil 75, distancia que se conoce como rango intercuartil. La línea que está dentro de la caja es la mediana o percentil 50.  Por otro lados los bigotes se unen por medio de la cada finalizando en el valor extremo percentil 0 y percentil 100. Los puntos que se encuentran fuera del bigote son los outliers.
+
+ ![](https://datavizcatalogue.com/ES/metodos/images/anatomy/SVG/diagrama_cajas_y_bigotes.svg)
+
+Exploremos los datos de diamantes entre el corte y el precio:
+```{r}
+data1 %>% ggplot()+geom_boxplot(aes(x = corte, y=precio))
+```
+
+Si los nombres de tus variables son muy largos, `geom_boxplot()` funcionará mejor si giras el gráfico en 90°. Puedes hacer esto agregando `coord_flip()` (voltear coordenadas).
+
+```{r}
+data1 %>%  ggplot() + geom_boxplot(aes(x = corte, y=precio))+coord_flip()
+```
+
+# Relación entre dos variables categóricas
+
+Para relacionar dos variables categóricas, debemos encontrar un número que nos relacione el conteo entre ellas. Existen diferentes formas de hacerlo, una de ellas es con la función `geom_count()` de la paquetería de `ggplot2`. Donde el tamaño nos indica el conteo de las observaciones con la combinación de variables correspondiente.  
+
+```{r}
+data1 %>% ggplot() + geom_count(aes(x=corte, y =color))
+```
+
+Si lo queremos ver como una tabla de datos, usamos el paquete `dplyr`:
+```{r}
+data1 %>% count(color,corte)
+```
+
+Otra opción es usar la visualización con la función `geom_tile()` y adaptar un `fill` o relleno con el conteo `n` del conteo previamente realizado.
+```{r}
+data1 %>% count(color,corte) %>% 
+  ggplot()+
+  geom_tile(aes(x=color,y=corte, fill= n))
+```
+
+#  Relación entre dos variables continuas
+
+Ya habíamos visto cómo realizar diagramas de dispersión o scatterplots con la función `geom_point()` y vimos que podemos realizar también la tendencia son función `geom_smooth()`.  Los diagramas de dispersión resultan menos útiles a medida los datos crecen, pues los puntos empiezan a superponerse y amontonarse en áreas oscuras uniformes, para esto podemos hacer un poco de transparencia con la función `alpha`
+```{r}
+data1 %>%  ggplot()+
+  geom_point(aes(x=quilate, y=precio), alpha = 1/100)
+```
+
+Otra solución es modificar el parámetro bin (contenedor, que en este caso alude a la idea de rango o unidad). Anteriormente usaste `geom_histogram()` y `geom_freqpoly()` para segmentar una variable en rangos de manera unidimensional. Ahora aprenderás a usar `geom_bin2d()` y `geom_hex()` para hacerlo en dos dimensiones.
+```{r}
+g1 <- data1 %>%  ggplot()+
+  geom_bin2d(aes(x=quilate, y=precio))
+  
+g2 <- data1 %>% ggplot()+
+  geom_hex(aes(x=quilate,y=precio))
+
+ggstatsplot::combine_plots(
+  plotlist = list(g1,g2),
+  plotgrid.args = list(nrow = 1),
+  annotation.args = list(caption = "Iteso")
+)
+```
+
+Otra opción es crear intervalos con una de las variables continuas de manera de que pueda ser tratada como una variable categórica. Luego, puedes usar alguna de las técnicas de visualización empleadas para representar la combinación de una variable categórica con una variable continua. Por ejemplo, 
+```{r}
+data1 %>% ggplot() + 
+  geom_boxplot(aes(x = quilate, y = precio, group = cut_number(quilate, 20)))
+```
+
+# Reporte de exploración de datos
+
+<center>
+![](https://boxuancui.github.io/DataExplorer/reference/figures/logo.png){width=15%}
+</center>
+
+También podemos realizar reportes completos con ` DataExplorer::create_report()`. Para el siguiente ejemplo debemos instalar los paquetes `DataExplorer`  y `nycflights13` para los datos (`install.packages("nycflights13")`).
+
+```{r}
+library(nycflights13)
+library(DataExplorer)
+```
+
+En el paquete `library(DataExplorer)`  hay 5 data frames:
+
+* airlines
+
+* airports
+
+* flights
+
+* planes
+
+* weather
+
+Podemos visualizar su estructura de la siguiente forma:
+
+```{r}
+data <- list(airlines, airports, flights, planes, weather)
+plot_str(data)
+```
+
+Para tener un sólo dataset más robusto podemos fusionar las tablas por medio de la función `merge()`
+
+```{r}
+final_data <- flights %>% merge(airlines, by= "carrier", all.x = TRUE) %>% 
+  merge(planes, by = "tailnum", all.x = TRUE, suffixes = c("_flights", "_planes")) %>% 
+  merge(airports, by.x = "origin", by.y = "faa", all.x = TRUE, suffixes = c("_carrier", "_origin")) %>% 
+  merge(airports, by.x = "dest", by.y = "faa", all.x = TRUE, suffixes = c("_origin", "_dest"))
+```
+
+## Análisis exploratorio de datos con la paquetería `DataExplorer`
+
+Para conocer el conjunto de datos podemos realizar un `summary()` como lo hicimos en la sesión anterior o podemos utilizar la función `introduce()`.
+
+```{r}
+introduce(final_data)
+
+# De forma gráfica
+plot_intro(final_data)
+```
+
+Debemos de notar algo en este conjunto de datos:
+
+* Sólo el 0.27% de las filas están completas,
+
+* tenemos 5.7% de observaciones faltantes, es decir, dado que solo tenemos 0.27% de las filas completas, solo hay 5.7% de observaciones faltantes del total.
+
+Estos valores faltantes nos podrán general problemas para analizar los datos, veamos un poco los perfiles que faltan.
+
+### Valores faltantes (missing values)
+
+Siempre, en todos los problemas reales, vamos a tener datos desordenados y con problemas. Para visualizar el perfil de los datos faltantes podemos utilizar la función `plot_missing()`.
+
+```{r}
+plot_missing(final_data)
+```
+
+Si le gusta más tener la información en forma de tabla puede obtener su perfil por medio de la función `profile_missing(final_data)`. 
+
+En la visualización anterior, podemos ver que la variable `speed` es la que en su mayoría le falta información, al parecer encontramos el culpable de que sólo el 0.27% de nuestras filas estén completas y probablemente esta variable no sea de mucha información. Por tanto la podemos eliminar de nuestro dataframe.
+
+```{r}
+final_data <- drop_columns(final_data, "speed")
+```
+
+### Distribuciones
+
+La visualización de las distribuciones de frecuencia para todas las características discretas se puede realizar con la función `plot_bar()`.
+
+```{r}
+plot_bar(final_data)
+```
+
+Tras una inspección detallada de la variable `manuracturer`, no es fácil identificar las siguientes características duplicadas:
+
+* AIRBUS and AIRBUS INDUSTRIE
+
+* CANADAIR and CANADAIR LTD
+
+* MCDONNELL DOUGLAS, MCDONNELL DOUGLAS AIRCRAFT CO and MCDONNELL DOUGLAS CORPORATION
+
+Por tanto, debemos proceder a limpiar esta variable
+
+```{r}
+final_data[which(final_data$manufacturer == "AIRBUS INDUSTRIE"),]$manufacturer <- "AIRBUS"
+final_data[which(final_data$manufacturer == "CANADAIR LTD"),]$manufacturer <- "CANADAIR"
+final_data[which(final_data$manufacturer %in% c("MCDONNELL DOUGLAS AIRCRAFT CO", "MCDONNELL DOUGLAS CORPORATION")),]$manufacturer <- "MCDONNELL DOUGLAS"
+
+plot_bar(final_data$manufacturer)
+
+```
+Adicionalmente, las variables `dst_origin`, `tzone_origin`, `year_flights` y `tz_origin` contienen un solo valor, por lo que deberíamos proceder a eliminarla, ya que no nos proporciona información:
+
+```{r}
+final_data <- drop_columns(final_data, c("dst_origin", "tzone_origin", "year_flights", "tz_origin"))
+```
+
+Con frecuencia, es muy beneficioso observar la distribución de frecuencia bivariada. Por ejemplo, para ver características discretas por `arr_delay`:
+
+```{r}
+plot_bar(final_data, with = "arr_delay")
+```
+
+Nótese que la distribución resultante se ve bastante diferente de la distribución de frecuencias regular.
+
+Puede optar por dividir por colores todas las frecuencias por una variable discreta, como por ejemplo `origin`:
+
+```{r}
+plot_bar(final_data, by = "origin")
+```
+
+### Histogramas
+
+Para visualizar distribuciones de todas las variables continuas podemos utilizar la función  `plot_histogram()`:
+
+```{r}
+plot_histogram(final_data)
+```
+
+También podemos observar que hay variables de fechas y horas que deben tratarse un poco más, por ejemplo, concentrando año, mes, día para formar una variable de `fecha` y/o agregar hora y minuto para formar la variable `fecha_hora`.
+
+Otra parte que podemos limpiar, es por ejemplo la variable `flight`, ya que esa deberíamos tenerla como un factor, por ser un número de vuelo y numéricamente no tiene ningún significado:
+
+```{r}
+final_data <- update_columns(final_data, "flight", as.factor)
+```
+
+También podemos remover las variables ` year_flights` y ` tz_origin` ya que sólo contienen un valor:
+
+```{r}
+final_data <- drop_columns(final_data, c("year_flights", "tz_origin"))
+```
+
+### QQ plot 
+
+La gráfica *Quantile-Quantile* es una forma de visualizar la desviasión de una distribución de probabilidad específica.  
+
+Después de analizar estos gráficos, a menudo es beneficioso aplicar una transformación matemática (como logaritmo) para modelos como la regresión lineal. Para hacerlo, podemos usar la función `plot_qq`. De forma predeterminada, se compara con la distribución normal.
+
+Nota: La función llevará mucho tiempo con muchas observaciones, por lo que puede optar por especificar un `sampled_rows` apropiado:
+
+```{r}
+qq_data <- final_data[, c("arr_delay", "air_time", "distance", "seats")]
+
+plot_qq(qq_data, sampled_rows = 1000L)
+```
+
+En el gráfico, `air_time`, `distance` y asientos parecen sesgados en ambas colas. Apliquemos una transformación logarítmica simple y grafiquemos de nuevo.
+
+```{r}
+log_qq_data <- update_columns(qq_data, 2:4, function(x) log(x + 1))
+
+plot_qq(log_qq_data[, 2:4], sampled_rows = 1000L)
+```
+
+Con esto obtener una mejor distribución. Si es necesario, también puede ver el gráfico QQ mediante otra función:
+
+```{r}
+qq_data <- final_data[, c("name_origin", "arr_delay", "air_time", "distance", "seats")]
+
+plot_qq(qq_data, by = "name_origin", sampled_rows = 1000L)
+```
+
+### Correlation Analysis
+
+Para visualizar el mapa de calor de la correlación de todas las variables que no tengan datos faltantes lo podemos realizar de la siguiente forma:
+
+```{r}
+plot_correlation(na.omit(final_data), maxcat = 5L)
+```
+
+También puede graficar variables sólo discretas/continuas de la siguiente forma:
+
+```{r}
+plot_correlation(na.omit(final_data), type = "c")
+plot_correlation(na.omit(final_data), type = "d")
+```
+
+### Principal Component Analysis (PCA)
+
+El análisis de componentes principales (PCA, por sus siglas en inglés,) consiste en expresar un conjunto de variables en un conjunto de combinaciones lineales de factores no correlacionados entre sí, estos factores dando cuenta una fracción cada vez más débil de la variabilidad de los datos.
+
+Este análisis lo podemos realizar directamente con la función `plot_prcomp (na.omit (final_data))`, pero PCA funcionará mejor si limpiamos los datos primero:
+
+```{r}
+pca_df <- na.omit(final_data[, c("origin", "dep_delay", "arr_delay", "air_time", "year_planes", "seats")])
+
+plot_prcomp(pca_df, variance_cap = 0.9, nrow = 2L, ncol = 2L)
+```
+
+### Boxplots
+
+Suponga que le gustaría construir un modelo para predecir los retrasos en las llegadas, puede visualizar la distribución de todas las características continuas en función de los retrasos en las llegadas con un diagrama de caja/bigotes (boxplot):
+
+```{r}
+## Reduce data size for demo purpose
+arr_delay_df <- final_data[, c("arr_delay", "month", "day", "hour", "minute", "dep_delay", "distance", "year_planes", "seats")]
+
+## Call boxplot function
+plot_boxplot(arr_delay_df, by = "arr_delay")
+```
+
+Entre todos los cambios sutiles en correlación con los retrasos en las llegadas, se puede detectar inmediatamente que los aviones con más de 300 asientos tienden a tener retrasos mucho más largos (16 ~ 21 horas). *Ahora podemos profundizar más para verificar o generar más hipótesis.*
+
+### Scatterplots
+
+Para mirar las relaciones entre variables podemos visualizar scatterplots o diagramas de dispersión.
+
+```{r}
+arr_delay_df2 <- final_data[, c("arr_delay", "dep_time", "dep_delay", "arr_time", "air_time", "distance", "year_planes", "seats")]
+
+plot_scatterplot(arr_delay_df2, by = "arr_delay", sampled_rows = 1000L)
+```
+
+Para finalizar, si queremos que se haga un reporte automático, lo podemos realizar con la función `create_report()`, lo que nos dará como resultado un html con todo lo que corresponde a un análisis rápido de exploración de datos, pero ojo, es más conveniente irlo haciendo paso a paso para que puedas ir entendiendo y limpiando tus datos.
